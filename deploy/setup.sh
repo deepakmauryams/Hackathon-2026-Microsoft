@@ -107,7 +107,17 @@ main() {
     fi
     sudo systemctl enable --now nginx
     sudo systemctl reload nginx
-    curl --fail --silent --show-error --max-time 5 http://127.0.0.1/health
+    # Reload signals Nginx asynchronously: old workers can briefly return 404.
+    # --retry-all-errors includes 404, unlike curl's default retry policy.
+    if ! curl --fail --silent --show-error --noproxy '*' --max-time 5 \
+        --retry 10 --retry-all-errors --retry-delay 1 --retry-max-time 30 \
+        http://127.0.0.1/health; then
+        printf '\nNginx health check still fails after retries. Check routing:\n' >&2
+        printf '  sudo nginx -T\n' >&2
+        printf '  sudo journalctl -u nginx -n 50 --no-pager\n' >&2
+        printf '  curl -i http://127.0.0.1:8000/health\n' >&2
+        fail 'API startup passed, but the Nginx route is not healthy. Existing site settings were preserved.'
+    fi
 
     printf '\n\nSetup complete. API: http://YOUR_VM_PUBLIC_IP/docs\n'
     printf 'Allow inbound TCP 80 in your VM network firewall (and UFW if active).\n'
