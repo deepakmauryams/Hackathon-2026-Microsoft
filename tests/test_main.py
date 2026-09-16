@@ -5,7 +5,8 @@ from app.main import app
 
 
 @pytest.fixture
-def client():
+def client(monkeypatch):
+    monkeypatch.setenv("RAG_API_KEY", "test-only-key-" + "a" * 32)
     with TestClient(app) as test_client:
         yield test_client
 
@@ -22,7 +23,7 @@ def test_root(client):
 def test_health(client):
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "ok"}
+    assert response.json() == {"status": "healthy", "documents": 5, "chunks": 5}
 
 
 def test_default_greeting(client):

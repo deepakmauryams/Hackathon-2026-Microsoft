@@ -8,6 +8,8 @@ DynamicUser=yes
 WorkingDirectory=/opt/hackathon-api
 Environment=PYTHONUNBUFFERED=1
 Environment=PYTHONDONTWRITEBYTECODE=1
+EnvironmentFile=-/etc/hackathon-api/api.env
+EnvironmentFile=-/etc/hackathon-api/public.env
 ExecStart=/opt/hackathon-api/.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 2 --proxy-headers --forwarded-allow-ips=127.0.0.1
 Restart=on-failure
 RestartSec=5

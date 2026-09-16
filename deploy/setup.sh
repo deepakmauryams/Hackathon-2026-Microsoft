@@ -71,6 +71,14 @@ main() {
     .venv/bin/python -m pip check
     .venv/bin/python -c 'from app.main import app; print("Application import OK:", app.title)'
 
+    step 'Prepare API key and proxy request limits'
+    if [[ ! -e /etc/nginx/sites-available/hackathon-api ]]; then
+        sudo install -m 644 deploy/nginx.conf /etc/nginx/sites-available/hackathon-api
+    fi
+    sudo install -m 644 deploy/rate-limit.conf /etc/nginx/conf.d/hackathon-rate-limit.conf
+    sudo install -m 644 deploy/request-limits.conf /etc/nginx/snippets/hackathon-api-limits.conf
+    sudo python3 deploy/configure_vm.py
+
     step 'Install and restart the API service'
     sudo install -m 644 deploy/hackathon-api.service /etc/systemd/system/hackathon-api.service
     sudo systemctl daemon-reload
@@ -122,6 +130,8 @@ main() {
     printf '\n\nSetup complete. API: http://YOUR_VM_PUBLIC_IP/docs\n'
     printf 'Allow inbound TCP 80 in your VM network firewall (and UFW if active).\n'
     printf 'Port 8000 stays private. Configure HTTPS before sending sensitive data.\n'
+    printf 'Search now requires x-api-key. The key is stored in /etc/hackathon-api/api.env (root-only).\n'
+    printf 'Enable HTTPS: bash deploy/enable-https.sh YOUR_DOMAIN YOUR_EMAIL\n'
     printf 'Next update: cd /opt/hackathon-api && git pull --ff-only origin main && bash deploy/setup.sh\n'
 }
 
