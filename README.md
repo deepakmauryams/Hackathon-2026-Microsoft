@@ -44,6 +44,44 @@ Open <http://127.0.0.1:8000/docs>. Use `--reload` for development only.
 
 ## Deploy on your Ubuntu/Debian VM
 
+### One-command setup or update (recommended)
+
+On your existing VM, run as the **same normal login user** that cloned the repo:
+
+```bash
+cd /opt/hackathon-api && git pull --ff-only origin main && bash deploy/setup.sh
+```
+
+The [setup script](deploy/setup.sh) installs prerequisites and Python dependencies,
+updates `main`, installs/restarts the API service, configures Nginx, and checks both
+local health endpoints. It can be rerun for subsequent deployments. It prompts for
+sudo if necessary; **do not run the whole script with sudo**.
+
+For a fresh VM without a clone, download the script, inspect it, then run it:
+
+```bash
+curl -fsSLo /tmp/hackathon-setup.sh https://raw.githubusercontent.com/deepakmauryams/Hackathon-2026-Microsoft/main/deploy/setup.sh
+less /tmp/hackathon-setup.sh
+bash /tmp/hackathon-setup.sh
+```
+
+This fresh-VM download requires curl and a publicly accessible repository. For a
+private repository, authenticate Git and clone it first, then run the script from
+that clone. The deployment destination is always `/opt/hackathon-api`.
+
+The script refuses dirty/divergent deployment clones and other enabled Nginx sites.
+It disables the default Nginx welcome site; use only on a dedicated VM, not one
+with a customized default site. Existing API Nginx configuration is preserved so
+reruns do not erase domain/TLS changes; subsequent Nginx template changes need
+manual review. The systemd service is replaced with the repository version.
+Updates briefly interrupt the API and are not an atomic rollback deployment.
+
+**Network access is still required:** allow inbound TCP 80 in your VM provider's
+firewall and, if UFW is active, run `sudo ufw allow 80/tcp`. The script does not
+alter firewalls, enable UFW, or configure HTTPS. Do not expose port 8000.
+
+### Manual setup (alternative)
+
 These commands target a **fresh Ubuntu 24.04+ or Debian 12+ VM with systemd**.
 Run them in Bash over SSH as your normal login user with sudo access.
 They install system packages and replace the default Nginx welcome site. If the
