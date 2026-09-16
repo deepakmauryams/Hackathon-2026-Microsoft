@@ -1,0 +1,1 @@
+"""Hackathon FastAPI application."""
