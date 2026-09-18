@@ -23,7 +23,7 @@ def test_root(client):
 def test_health(client):
     response = client.get("/health")
     assert response.status_code == 200
-    assert response.json() == {"status": "healthy", "documents": 5, "chunks": 5}
+    assert response.json() == {"status": "healthy"}
 
 
 def test_default_greeting(client):

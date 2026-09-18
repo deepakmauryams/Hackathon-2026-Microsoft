@@ -1,0 +1,1 @@
+"""Standalone CAG ingestion pipeline; deliberately independent of app/."""

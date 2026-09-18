@@ -1,0 +1,18 @@
+log_level: INFO
+telemetry_disabled: true
+storage:
+  storage_path: /data/files/cag/qdrant-native/storage
+  snapshots_path: /data/files/cag/qdrant-native/snapshots
+  temp_path: /data/files/cag/qdrant-native/tmp
+  on_disk_payload: true
+  performance:
+    max_search_threads: 2
+    optimizer_cpu_budget: 1
+service:
+  host: 127.0.0.1
+  http_port: 6333
+  grpc_port: null
+  enable_cors: false
+  enable_snapshot_url_recovery: false
+cluster:
+  enabled: false

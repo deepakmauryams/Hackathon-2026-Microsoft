@@ -1,0 +1,89 @@
+name: cag-catalogue
+
+x-logging: &bounded-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.19.0
+    restart: unless-stopped
+    mem_limit: 2g
+    memswap_limit: 2g
+    environment:
+      QDRANT__TELEMETRY_DISABLED: "true"
+      QDRANT__STORAGE__SNAPSHOTS_PATH: /qdrant/storage/snapshots
+    ports:
+      - "127.0.0.1:6333:6333"
+    volumes:
+      - type: bind
+        source: /data/files/cag/qdrant
+        target: /qdrant/storage
+        bind:
+          create_host_path: false
+    networks: [catalogue]
+    logging: *bounded-logging
+
+  worker:
+    image: cag-catalogue-worker:local
+    build:
+      context: ../..
+      dockerfile: ingestion/deploy/Dockerfile
+    restart: unless-stopped
+    init: true
+    user: "10001:10001"
+    mem_limit: 4g
+    memswap_limit: 4g
+    cpus: 2.0
+    pids_limit: 256
+    stop_grace_period: 2m
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    tmpfs:
+      - /tmp:size=536870912,mode=1777
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      CAG_COLLECTION: cag_catalogue_v1
+      CAG_MODEL_CACHE: /data/files/cag/models
+      HF_HOME: /data/files/cag/models/huggingface
+      TIKTOKEN_CACHE_DIR: /data/files/cag/models/tiktoken
+      HOME: /data/files/cag/models
+      XDG_CACHE_HOME: /data/files/cag/models/xdg
+      CAG_MIN_FREE_BYTES: "5368709120"
+      CAG_THREADS: "2"
+      OMP_NUM_THREADS: "2"
+      OMP_THREAD_LIMIT: "2"
+      OPENBLAS_NUM_THREADS: "2"
+      MKL_NUM_THREADS: "2"
+      NUMEXPR_NUM_THREADS: "2"
+      TOKENIZERS_PARALLELISM: "false"
+    volumes:
+      - type: bind
+        source: /data/files/cag
+        target: /data/files/cag
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /data/files/cag/pipeline
+        target: /data/files/cag/pipeline
+        bind:
+          create_host_path: false
+      - type: bind
+        source: /data/files/cag/models
+        target: /data/files/cag/models
+        bind:
+          create_host_path: false
+    depends_on:
+      qdrant:
+        condition: service_started
+    networks: [catalogue]
+    logging: *bounded-logging
+
+networks:
+  # Private service discovery; egress remains available for CAG/model downloads.
+  catalogue:
+    driver: bridge

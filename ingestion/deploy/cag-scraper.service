@@ -1,0 +1,44 @@
+[Unit]
+Description=CAG audit report discovery, OCR and Qdrant indexing
+Wants=network-online.target cag-qdrant.service
+After=network-online.target cag-qdrant.service
+RequiresMountsFor=/data/files
+ConditionPathIsMountPoint=/data/files
+StartLimitIntervalSec=0
+
+[Service]
+Type=simple
+User=cag-scraper
+Group=cag-scraper
+WorkingDirectory=/opt/cag-scraper/app
+EnvironmentFile=/etc/cag-scraper/worker.env
+ExecStartPre=/opt/cag-scraper/venv/bin/python ingestion/deploy/native-preflight.py
+ExecStart=/opt/cag-scraper/venv/bin/python -m ingestion.catalogue --data-dir ${CAG_DATA_DIR} run
+Restart=on-failure
+RestartSec=60
+TimeoutStartSec=120
+TimeoutStopSec=120
+# Terminate OCR children with the worker; queued processing is recovered on restart.
+KillMode=control-group
+MemoryMax=4G
+MemorySwapMax=0
+CPUQuota=200%
+TasksMax=256
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/data/files/cag/worker-native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=cag-scraper
+LogRateLimitIntervalSec=30s
+LogRateLimitBurst=200
+
+[Install]
+WantedBy=multi-user.target

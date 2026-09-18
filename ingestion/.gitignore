@@ -1,0 +1,6 @@
+.venv/
+data/
+.cache/
+__pycache__/
+.pytest_cache/
+catalogue-data/

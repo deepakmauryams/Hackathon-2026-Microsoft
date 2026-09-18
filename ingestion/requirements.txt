@@ -1,0 +1,7 @@
+beautifulsoup4==4.15.0
+httpx==0.28.1
+pypdf==6.18.0
+tiktoken==0.14.0
+fastembed==0.7.4
+qdrant-client==1.19.0
+pytest==9.1.1

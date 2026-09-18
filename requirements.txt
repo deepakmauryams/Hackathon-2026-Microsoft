@@ -1,2 +1,4 @@
 fastapi==0.141.1
 uvicorn==0.52.4
+fastembed==0.7.4
+qdrant-client==1.19.0

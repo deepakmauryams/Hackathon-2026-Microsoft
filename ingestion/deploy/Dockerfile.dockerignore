@@ -1,0 +1,15 @@
+# Dockerfile-specific allowlist: never send repository secrets, API code or data.
+**
+!ingestion/
+!ingestion/**/
+!ingestion/**/*.py
+!ingestion/requirements.txt
+ingestion/**/.venv/**
+ingestion/**/venv/**
+ingestion/**/data/**
+ingestion/**/.cache/**
+ingestion/**/cache/**
+ingestion/**/models/**
+ingestion/**/__pycache__/**
+ingestion/**/.pytest_cache/**
+ingestion/tests/**

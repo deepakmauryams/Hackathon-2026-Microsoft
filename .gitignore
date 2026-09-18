@@ -11,3 +11,16 @@ htmlcov/
 *.log
 .idea/
 .vscode/
+
+# Private credentials and generated deployment/data artifacts.
+*.key
+*.pem
+*.pfx
+*.p12
+id_rsa*
+id_ed25519*
+*.sqlite*
+*.db
+*.tar.gz
+*.zip
+*secret-scan*.json

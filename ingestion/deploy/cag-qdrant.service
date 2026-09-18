@@ -1,0 +1,32 @@
+[Unit]
+Description=CAG Qdrant native vector database
+After=network.target
+RequiresMountsFor=/data/files
+ConditionPathIsMountPoint=/data/files
+StartLimitIntervalSec=60
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=cag-qdrant
+Group=cag-qdrant
+WorkingDirectory=/data/files/cag/qdrant-native
+ExecStart=/opt/cag-qdrant/qdrant --config-path /etc/cag-qdrant/config.yaml
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=120
+LimitNOFILE=65536
+UMask=0077
+MemoryMax=2G
+CPUQuota=200%
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ReadWritePaths=/data/files/cag/qdrant-native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
