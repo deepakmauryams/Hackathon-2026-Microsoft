@@ -14,6 +14,10 @@ an environment dump; it requests `sudo` only for specific installation operation
   incompatible profile, or invalid passage blocks deployment. This proves usable
   progress, not completion of the crawl.
 - `/data/files` must already be a real mount, and `/opt` needs **at least 4 GiB free**.
+  The data mount may be operator-owned (for example, `azureuser`); it is checked
+  for mount/directory identity and symlinks, not root ownership. Do not change its
+  ownership or permissions to satisfy an older installer. Executable/configuration
+  directories still require root ownership and no group/world write access.
   More space may be necessary for accumulated releases and the pip install.
   Python/venv, systemd, curl, sudo, and the worker's existing runtime are prerequisites;
   the installer does not use apt, mount or format disks, or open firewall ports.

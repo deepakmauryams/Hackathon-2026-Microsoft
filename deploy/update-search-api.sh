@@ -157,7 +157,11 @@ main() {
         return
     fi
     mountpoint -q /data/files || fail '/data/files must already be mounted; nothing will be mounted/formatted.'
-    for path in /data /data/files /opt/cag-scraper /opt/cag-scraper/app /opt/cag-scraper/venv /etc/cag-scraper /etc/hackathon-api; do
+    # This is existing data storage, not a trusted executable/config directory.
+    # Its owner is chosen by the volume operator; never chown/chmod the mount.
+    sudo test -d /data/files && ! sudo test -L /data/files &&
+        [[ $(sudo readlink -f -- /data/files) == /data/files ]] || fail 'Data mount must be a real, non-symlinked directory.'
+    for path in /data /opt/cag-scraper /opt/cag-scraper/app /opt/cag-scraper/venv /etc/cag-scraper /etc/hackathon-api; do
         trusted_path "$path"
     done
     for file in /etc/cag-scraper/worker.env /etc/hackathon-api/api.env /etc/hackathon-api/public.env; do

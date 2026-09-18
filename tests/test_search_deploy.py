@@ -300,6 +300,20 @@ def test_service_dropin_preserves_hardening_and_bounds_resources():
     assert "--only-binary=:all:" in script and "PIP_CONFIG_FILE=/dev/null" in script
 
 
+def test_data_mount_preserves_operator_ownership_and_checks_mount_identity():
+    script = (ROOT / "deploy/update-search-api.sh").read_text(encoding="utf-8")
+    preflight = script.split("    mountpoint -q /data/files", 1)[1].split("    for file in", 1)[0]
+    assert "sudo test -d /data/files" in preflight
+    assert "! sudo test -L /data/files" in preflight
+    assert "$(sudo readlink -f -- /data/files) == /data/files" in preflight
+    trusted_paths = preflight.split("for path in ", 1)[1].split("; do", 1)[0].split()
+    assert "/data/files" not in trusted_paths
+    assert {"/data", "/opt/cag-scraper", "/opt/cag-scraper/app",
+            "/opt/cag-scraper/venv", "/etc/cag-scraper", "/etc/hackathon-api"} <= set(trusted_paths)
+    assert "trusted_path \"$path\"" in preflight
+    assert "sudo chown" not in preflight and "sudo chmod" not in preflight
+
+
 def test_trusted_path_can_inspect_root_only_environment_directory():
     script = (ROOT / "deploy/update-search-api.sh").read_text(encoding="utf-8")
     helper = script.split("trusted_path() {", 1)[1].split("\n}", 1)[0]
